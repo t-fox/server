@@ -166,7 +166,9 @@ function new_client(id, opt, cb) {
 
     var popt = {
         id: id,
-        max_tcp_sockets: opt.max_tcp_sockets
+        max_tcp_sockets: opt.max_tcp_sockets,
+        min_port: opt.min_port,
+        max_port: opt.max_port,
     };
 
     var client = Proxy(popt, function(err, info) {

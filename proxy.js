@@ -1,4 +1,5 @@
 var net = require('net');
+var portastic = require('portastic');
 var EventEmitter = require('events').EventEmitter;
 
 var log = require('bookrc');
@@ -18,6 +19,12 @@ var Proxy = function(opt, cb) {
 
     // default max is 10
     var max_tcp_sockets = opt.max_tcp_sockets || 10;
+
+    // default min port is 49152
+    var min_port = opt.min_port || 49152;
+
+    // default max port is 65535
+    var max_port = opt.max_port || 65535;
 
     // new tcp server to service requests for this client
     var client_server = net.createServer();
@@ -115,15 +122,27 @@ var Proxy = function(opt, cb) {
         }
     });
 
-    client_server.listen(function() {
-        var port = client_server.address().port;
-        debug('tcp server listening on port: %d', port);
+    portastic.find({
+        min: min_port,
+        max: max_port,
+        retrieve: 1
+    })
+    .then(function(ports) {
+        if (!ports[0]) {
+            throw new Error('no more free ports in range %d:%d', min_port, max_port);
+        }
 
-        cb(null, {
-            // port for lt client tcp connections
-            port: port,
-            // maximum number of tcp connections allowed by lt client
-            max_conn_count: max_tcp_sockets
+        var port = ports[0]
+
+        client_server.listen(port, function () {
+            debug('tcp server listening on port: %d', port);
+
+            cb(null, {
+                // port for lt client tcp connections
+                port: port,
+                // maximum number of tcp connections allowed by lt client
+                max_conn_count: max_tcp_sockets
+            });
         });
     });
 };

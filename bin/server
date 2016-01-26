@@ -24,6 +24,14 @@ var argv = optimist
         default: false,
         describe: 'use this flag to indicate that server runs in a subdomain'
     })
+    .options('min-port', {
+        default: 49152,
+        describe: 'lowest possible port for opening tunnel forward'
+    })
+    .options('max-port', {
+        default: 65535,
+        describe: 'highest possible port for opening tunnel forward'
+    })
     .argv;
 
 if (argv.help) {
@@ -33,6 +41,8 @@ if (argv.help) {
 
 var server = require('../server')({
     max_tcp_sockets: argv['max-sockets'],
+    min_port: argv['min-port'],
+    max_port: argv['max-port'],
     secure: argv.secure,
     sub: argv.sub,
 });
